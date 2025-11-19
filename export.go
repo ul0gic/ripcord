@@ -67,9 +67,6 @@ func writeMarkdown(path string, export Export) error {
 	fmt.Fprintf(&b, "# Discord export for channel %s\n\n", export.ChannelID)
 	fmt.Fprintf(&b, "- Exported at: %s\n", export.ExportedAt.Format(time.RFC3339))
 	fmt.Fprintf(&b, "- Messages: %d\n", export.MessageCount)
-	if export.GuildID != "" {
-		fmt.Fprintf(&b, "- Guild: %s\n", export.GuildID)
-	}
 	if export.Filters.Since != nil {
 		fmt.Fprintf(&b, "- Since: %s\n", export.Filters.Since.Format(time.RFC3339))
 	}
@@ -108,9 +105,6 @@ func writeMarkdown(path string, export Export) error {
 				parts = append(parts, fmt.Sprintf("%s ×%d", react.Emoji, react.Count))
 			}
 			fmt.Fprintf(&b, "**Reactions:** %s\n\n", strings.Join(parts, ", "))
-		}
-		if msg.JumpURL != "" {
-			fmt.Fprintf(&b, "[Jump to message](%s)\n\n", msg.JumpURL)
 		}
 	}
 

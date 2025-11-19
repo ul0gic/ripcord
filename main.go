@@ -46,7 +46,6 @@ func main() {
 
 	export := Export{
 		ChannelID:    cfg.Options.ChannelID,
-		GuildID:      cfg.Options.GuildID,
 		ExportedAt:   time.Now().UTC(),
 		MessageCount: len(messages),
 		Messages:     messages,

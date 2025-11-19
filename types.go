@@ -7,7 +7,6 @@ import (
 
 type Export struct {
 	ChannelID    string        `json:"channel_id"`
-	GuildID      string        `json:"guild_id,omitempty"`
 	ExportedAt   time.Time     `json:"exported_at"`
 	MessageCount int           `json:"message_count"`
 	Messages     []Message     `json:"messages"`
@@ -31,12 +30,10 @@ type Stats struct {
 type Message struct {
 	ID              string          `json:"id"`
 	ChannelID       string          `json:"channel_id"`
-	GuildID         string          `json:"guild_id,omitempty"`
 	Author          Author          `json:"author"`
 	Content         string          `json:"content"`
 	Timestamp       time.Time       `json:"timestamp"`
 	EditedTimestamp *time.Time      `json:"edited_timestamp,omitempty"`
-	JumpURL         string          `json:"jump_url,omitempty"`
 	MentionUserIDs  []string        `json:"mention_user_ids,omitempty"`
 	MentionRoleIDs  []string        `json:"mention_role_ids,omitempty"`
 	Attachments     []Attachment    `json:"attachments,omitempty"`
@@ -74,7 +71,6 @@ type ReplyReference struct {
 type apiMessage struct {
 	ID                string            `json:"id"`
 	ChannelID         string            `json:"channel_id"`
-	GuildID           string            `json:"guild_id"`
 	Content           string            `json:"content"`
 	Timestamp         string            `json:"timestamp"`
 	EditedTimestamp   *string           `json:"edited_timestamp"`

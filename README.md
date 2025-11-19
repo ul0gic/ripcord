@@ -113,3 +113,5 @@ Have ideas or want to add another output format? Crack open the relevant file (s
 - Clone the repo, run `go build ./...`, and keep changes scoped.
 - Follow `gofmt` + `staticcheck` before committing: `go fmt ./...` and `staticcheck ./...` (install via `go install honnef.co/go/tools/cmd/staticcheck@latest`).
 - Use short commit formats like `feat: add --range flag`; describe CLI behavior and attach sample logs/outputs in PR descriptions.
+
+I am not responsible for what people do with this research tool.

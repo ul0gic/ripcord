@@ -29,7 +29,7 @@ Output
 
 Examples
   # Pull last seven days of history into JSON
-  %s --channel 123 --guild 999 --days 7
+  %s --channel 123 --days 7
 
   # Filter by keywords and export Markdown
   %s --channel 123 --keyword breach --keyword poc --format markdown

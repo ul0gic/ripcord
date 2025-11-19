@@ -76,7 +76,7 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 				break
 			}
 
-			normalized := normalizeMessage(raw, msgTime, opts.GuildID)
+			normalized := normalizeMessage(raw, msgTime)
 
 			if len(keywords) > 0 && !matchesKeywords(normalized.Content, keywords) {
 				continue
@@ -213,11 +213,10 @@ func backoffDuration(attempt int) time.Duration {
 	return d
 }
 
-func normalizeMessage(raw apiMessage, timestamp time.Time, guildID string) Message {
+func normalizeMessage(raw apiMessage, timestamp time.Time) Message {
 	msg := Message{
 		ID:        raw.ID,
 		ChannelID: raw.ChannelID,
-		GuildID:   guildID,
 		Author: Author{
 			ID:          raw.Author.ID,
 			Username:    chooseName(raw.Author.Username, raw.Author.GlobalName),
@@ -235,10 +234,6 @@ func normalizeMessage(raw apiMessage, timestamp time.Time, guildID string) Messa
 			parsed := t.UTC()
 			msg.EditedTimestamp = &parsed
 		}
-	}
-
-	if guildID != "" {
-		msg.JumpURL = fmt.Sprintf("https://discord.com/channels/%s/%s/%s", guildID, raw.ChannelID, raw.ID)
 	}
 
 	if len(raw.Mentions) > 0 {

@@ -22,7 +22,6 @@ type runConfig struct {
 
 type scrapeOptions struct {
 	ChannelID   string
-	GuildID     string
 	Keywords    []string
 	IncludeBots bool
 	MaxMessages int
@@ -51,7 +50,6 @@ func parseConfig() (*runConfig, error) {
 
 	token := flag.String("token", "", "Discord bot/user token (or set DISCORD_TOKEN)")
 	channel := flag.String("channel", "", "Channel ID to scrape (required)")
-	guild := flag.String("guild", "", "Guild/server ID for jump links (optional)")
 	daysBack := flag.Int("days", 0, "Relative days window (required if --hours absent)")
 	hoursBack := flag.Int("hours", 0, "Relative hours window (required if --days absent)")
 	rangeStr := flag.String("range", "", "Absolute window start,end (RFC3339)")
@@ -133,7 +131,6 @@ func parseConfig() (*runConfig, error) {
 		Quiet:        *quiet,
 		Options: scrapeOptions{
 			ChannelID:   *channel,
-			GuildID:     strings.TrimSpace(*guild),
 			Keywords:    keywordList,
 			IncludeBots: *includeBots,
 			MaxMessages: *maxMessages,
