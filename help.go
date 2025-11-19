@@ -19,7 +19,7 @@ Core Flags
   --hours <n>                      Relative hours window (required if days absent)
   --range start,end                Absolute RFC3339 window (UTC)
   --keyword <text>                 Case-insensitive filter; repeat flag
-  --include-bots                   Include bot-authored messages
+  --user <name>                    Filter by username/display name; repeatable
 
 Output
   --format json|markdown|both      Export format (default json)

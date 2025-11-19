@@ -12,7 +12,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 | Feature | Details |
 |---------|---------|
 | Token Aware | Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`. |
-| Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--max`, and bot exclusion toggles. |
+| Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--user`, and `--max` filters (bots are skipped automatically). |
 | Portable Output | `--format json|markdown|both` and custom filename prefixes; both formats land in the current working directory. |
 | Zero Infrastructure | Pure CLI workflow—no database, queues, or external storage required. |
 
@@ -66,7 +66,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 | Required | `--channel <id>` |
 | Relative Window | `--hours <1-24>` for short runs or `--days <n>` for longer spans (at least one required) |
 | Range | `--range start,end` (RFC3339 UTC timestamps) |
-| Content Filters | Repeat `--keyword foo`; add `--include-bots` to keep bot posts |
+| Content Filters | Repeat `--keyword foo`; add `--user ul0gic` to target authors |
 | Output | `--format json|markdown|both` · `--output <prefix>` · `--max <n>` · `--quiet` |
 | Notes | Tokens are sourced from `--token`, `DISCORD_TOKEN`, or `set-token`. Stay within Discord ToS. |
 
@@ -78,6 +78,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 | Scrape Last 12h | `ripcord --channel 12345 --hours 12`
 | Range | `ripcord --channel 12345 --range "2025-01-01T00:00:00Z,2025-01-02T00:00:00Z"`
 | Keyword Filter | `ripcord --channel 12345 --days 2 --keyword breach --keyword poc`
+| User Filter | `ripcord --channel 12345 --days 1 --user ul0gic`
 | Markdown Export | `ripcord --channel 12345 --days 1 --format markdown`
 | JSON Export | `ripcord --channel 12345 --days 1 --format json`
 

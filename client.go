@@ -33,7 +33,8 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 	var results []Message
 	var stats Stats
 	var before string
-	keywords := lowerKeywords(opts.Keywords)
+	keywords := normalizeFilters(opts.Keywords)
+	users := normalizeFilters(opts.Users)
 
 	for {
 		batch, metrics, err := c.fetchBatch(opts.ChannelID, before, maxBatchSize)
@@ -53,7 +54,7 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 
 		var stop bool
 		for _, raw := range batch {
-			if raw.Author.Bot && !opts.IncludeBots {
+			if raw.Author.Bot {
 				continue
 			}
 
@@ -77,6 +78,10 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 			}
 
 			normalized := normalizeMessage(raw, msgTime)
+
+			if len(users) > 0 && !matchesUsers(normalized.Author, users) {
+				continue
+			}
 
 			if len(keywords) > 0 && !matchesKeywords(normalized.Content, keywords) {
 				continue
@@ -298,10 +303,10 @@ func chooseDisplayName(author apiAuthor) string {
 	return ""
 }
 
-func lowerKeywords(keywords []string) []string {
-	lower := make([]string, 0, len(keywords))
+func normalizeFilters(values []string) []string {
+	lower := make([]string, 0, len(values))
 	seen := make(map[string]struct{})
-	for _, kw := range keywords {
+	for _, kw := range values {
 		trimmed := strings.ToLower(strings.TrimSpace(kw))
 		if trimmed == "" {
 			continue
@@ -322,6 +327,24 @@ func matchesKeywords(content string, keywords []string) bool {
 	text := strings.ToLower(content)
 	for _, kw := range keywords {
 		if strings.Contains(text, kw) {
+			return true
+		}
+	}
+	return false
+}
+
+func matchesUsers(author Author, users []string) bool {
+	if len(users) == 0 {
+		return true
+	}
+	username := strings.ToLower(author.Username)
+	display := strings.ToLower(author.DisplayName)
+	id := strings.ToLower(author.ID)
+	for _, u := range users {
+		if u == "" {
+			continue
+		}
+		if username == u || (display != "" && display == u) || id == u {
 			return true
 		}
 	}

@@ -50,11 +50,11 @@ func main() {
 		MessageCount: len(messages),
 		Messages:     messages,
 		Filters: FilterSummary{
-			Since:       cfg.Options.Since,
-			Until:       cfg.Options.Until,
-			Keywords:    cfg.Options.Keywords,
-			Limit:       cfg.Options.MaxMessages,
-			IncludeBots: cfg.Options.IncludeBots,
+			Since:    cfg.Options.Since,
+			Until:    cfg.Options.Until,
+			Keywords: cfg.Options.Keywords,
+			Users:    cfg.Options.Users,
+			Limit:    cfg.Options.MaxMessages,
 		},
 		Stats: stats,
 	}

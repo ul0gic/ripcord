@@ -23,7 +23,7 @@ type runConfig struct {
 type scrapeOptions struct {
 	ChannelID   string
 	Keywords    []string
-	IncludeBots bool
+	Users       []string
 	MaxMessages int
 	Since       *time.Time
 	Until       *time.Time
@@ -54,7 +54,8 @@ func parseConfig() (*runConfig, error) {
 	hoursBack := flag.Int("hours", 0, "Relative hours window (required if --days absent)")
 	rangeStr := flag.String("range", "", "Absolute window start,end (RFC3339)")
 	maxMessages := flag.Int("max", 0, "Stop after collecting this many messages (0 = unlimited)")
-	includeBots := flag.Bool("include-bots", false, "Include messages from bot accounts")
+	var users multiValue
+	flag.Var(&users, "user", "Filter by username or ID (repeatable)")
 	format := flag.String("format", "json", "Output format: json, markdown, or both")
 	output := flag.String("output", "", "Output filename prefix (default discord_<channel>_<timestamp>)")
 	quiet := flag.Bool("quiet", false, "Only print errors")
@@ -118,6 +119,13 @@ func parseConfig() (*runConfig, error) {
 		}
 	}
 
+	userList := make([]string, 0, len(users))
+	for _, u := range users {
+		if trimmed := strings.ToLower(strings.TrimSpace(u)); trimmed != "" {
+			userList = append(userList, trimmed)
+		}
+	}
+
 	prefix := strings.TrimSpace(*output)
 	if prefix == "" {
 		timestamp := time.Now().UTC().Format("20060102T150405Z")
@@ -132,7 +140,7 @@ func parseConfig() (*runConfig, error) {
 		Options: scrapeOptions{
 			ChannelID:   *channel,
 			Keywords:    keywordList,
-			IncludeBots: *includeBots,
+			Users:       userList,
 			MaxMessages: *maxMessages,
 			Since:       since,
 			Until:       until,

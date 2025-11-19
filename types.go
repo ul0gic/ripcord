@@ -15,11 +15,11 @@ type Export struct {
 }
 
 type FilterSummary struct {
-	Since       *time.Time `json:"since,omitempty"`
-	Until       *time.Time `json:"until,omitempty"`
-	Keywords    []string   `json:"keywords,omitempty"`
-	Limit       int        `json:"limit,omitempty"`
-	IncludeBots bool       `json:"include_bots"`
+	Since    *time.Time `json:"since,omitempty"`
+	Until    *time.Time `json:"until,omitempty"`
+	Keywords []string   `json:"keywords,omitempty"`
+	Limit    int        `json:"limit,omitempty"`
+	Users    []string   `json:"users,omitempty"`
 }
 
 type Stats struct {

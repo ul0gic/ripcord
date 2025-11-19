@@ -76,10 +76,12 @@ func writeMarkdown(path string, export Export) error {
 	if len(export.Filters.Keywords) > 0 {
 		fmt.Fprintf(&b, "- Keywords: %s\n", strings.Join(export.Filters.Keywords, ", "))
 	}
+	if len(export.Filters.Users) > 0 {
+		fmt.Fprintf(&b, "- Users: %s\n", strings.Join(export.Filters.Users, ", "))
+	}
 	if export.Filters.Limit > 0 {
 		fmt.Fprintf(&b, "- Limit: %d\n", export.Filters.Limit)
 	}
-	fmt.Fprintf(&b, "- Include bots: %t\n", export.Filters.IncludeBots)
 	if export.Stats.Requests > 0 {
 		fmt.Fprintf(&b, "- API requests: %d\n", export.Stats.Requests)
 	}
