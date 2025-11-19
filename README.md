@@ -1,12 +1,9 @@
-╔════════════════════════════════════════════════════════════╗
-║  RIPCORD                                                   ║
-╚════════════════════════════════════════════════════════════╝
-▣ Research Indexed Platform for Channel Observation, Retrieval & Discovery
+╔════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  RIPCORD | Research Indexed Platform for Channel Observation, Retrieval & Discovery                ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ▣ Language: Go 1.24.4  ·  ▣ Target: Discord channel export CLI  ·  ▣ Footprint: single static binary
 
-[![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#)
-[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#)
-[![Status](https://img.shields.io/badge/status-alpha-orange)](#)
+[![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
 Ripcord is a no-database, no-frills reconnaissance tool that lets you sweep a Discord channel and drop the results as JSON or Markdown directly into the directory you ran the command from. Tuned filters (time spans, keywords, user/bot controls) let you dig through history quickly without tripping Discord’s rate limits.
 
