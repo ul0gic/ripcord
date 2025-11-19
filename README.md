@@ -16,12 +16,32 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 ---
 
 ## Install & Token Setup
+
+### Binary location (after `go install`)
+
+| OS / Shell        | Path            |
+|-------------------|-----------------|
+| Linux, macOS      | `~/go/bin`      |
+| Other Unix (custom GOPATH) | `$(go env GOPATH)/bin` |
+
+### Token workflow
+
 ```bash
 go install github.com/ul0gic/ripcord@latest
 ripcord set-token "$DISCORD_TOKEN"
-source ~/.bashrc    # reload so future shells inherit the token
+source ~/.bashrc    # or your shell rc file
 ```
-`go install` drops a single binary into `$(go env GOPATH)/bin` (typically `~/go/bin` on Linux/macOS). The `set-token` command writes a block to your `~/.bashrc`, so Unix shells auto-load the token after `source ~/.bashrc` or starting a new terminal. Use Discord’s “Developer Mode → Copy Channel ID” before scraping.
+
+| Shell | File updated |
+|-------|--------------|
+| bash  | `~/.bashrc`  |
+| zsh   | `~/.zshrc`   |
+| fish  | `~/.config/fish/config.fish` |
+
+1. `go install` places the binary in your Go bin directory (table above).
+2. `set-token` injects the export line into your shell config so every new shell inherits the token.
+3. Reload the shell (`source` command) after running `set-token`.
+4. Enable Discord’s Developer Mode and use **Copy Channel ID** on the channel you plan to scrape.
 
 ---
 
@@ -39,28 +59,28 @@ Result: `discord_123456789012345678_<timestamp>.json` and `.md` written into the
 ---
 
 ## CLI Reference
-```
-╔════════════════════════════════════════════════════════════╗
-║ RIPCORD — Discord channel intelligence tool                ║
-╚════════════════════════════════════════════════════════════╝
-Usage
-  ripcord --channel <id> [flags]        Scrape a channel and export history
-  ripcord set-token <discord_token>     Store token in ~/.bashrc once
-Tokens
-  --token <value>    Provide token explicitly (optional when DISCORD_TOKEN exists)
-Core Flags
-  --channel <id>     REQUIRED channel ID
-  --days/--hours     Relative history (required) ·  --range start,end (UTC) absolute window
-  --keyword <text>   Repeat for OR matches ·  --include-bots to retain bot posts
-Output
-  --format json|markdown|both  ·  --output <prefix>  ·  --max <n>  ·  --quiet
-Performance
-  --batch-size <1-100>          ·  --rate <req/s>
-Notes
-  • Tokens come from --token, DISCORD_TOKEN, or set-token
-  • Filters are client-side; stay within Discord’s ToS and rate limits
-  • Multiple --keyword flags create OR-style matching
-```
+
+| Category | Flags / Description |
+|----------|---------------------|
+| Usage | `ripcord --channel <id> [flags]`  Scrape a channel and export history |
+| Token | `ripcord set-token <token>`  Writes the shell export so tokens persist |
+| Required | `--channel <id>` |
+| Relative window | `--days <n>` and/or `--hours <n>` (one must be set) |
+| Absolute window | `--range start,end` (RFC3339 UTC timestamps) |
+| Content filters | Repeat `--keyword foo`; add `--include-bots` to keep bot posts |
+| Output | `--format json|markdown|both` · `--output <prefix>` · `--max <n>` · `--quiet` |
+| Performance | `--batch-size <1-100>` · `--rate <req/s>` |
+| Notes | Tokens are sourced from `--token`, `DISCORD_TOKEN`, or `set-token`. Stay within Discord ToS and rate limits. |
+
+### CLI Examples
+
+| Goal | Example |
+|------|---------|
+| Scrape last 24h | `ripcord --channel 111... --days 1`
+| Scrape last 90m | `ripcord --channel 111... --hours 1 --days 0`
+| Absolute window | `ripcord --channel 111... --range "2025-01-01T00:00:00Z,2025-01-02T00:00:00Z"`
+| Keyword filter | `ripcord --channel 111... --days 2 --keyword breach --keyword poc`
+| Markdown export | `ripcord --channel 111... --days 1 --format markdown`
 
 ---
 
