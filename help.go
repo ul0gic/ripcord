@@ -15,7 +15,6 @@ Tokens
 
 Core Flags
   --channel <id>                   REQUIRED. Channel ID to scrape
-  --guild <id>                     Guild/server ID (enables jump links)
   --days <n>                       Relative days window (required if hours absent)
   --hours <n>                      Relative hours window (required if days absent)
   --range start,end                Absolute RFC3339 window (UTC)

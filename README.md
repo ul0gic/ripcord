@@ -15,21 +15,13 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
 ---
 
-## Install
+## Install & Token Setup
 ```bash
 go install github.com/ul0gic/ripcord@latest
-# or clone and go build ./...
-```
-The binary lands in `$(go env GOPATH)/bin` (usually `~/go/bin`).
-
----
-
-## One-Time Token Setup
-```
 ripcord set-token "$DISCORD_TOKEN"
 source ~/.bashrc    # reload so future shells inherit the token
 ```
-This writes a clearly marked block to `~/.bashrc` so subsequent runs pick up the token automatically. Open a new shell (or re-source) before running Ripcord, and you can still override with `--token` whenever needed.
+`go install` drops a single binary into `$(go env GOPATH)/bin` (typically `~/go/bin` on Linux/macOS). The `set-token` command writes a block to your `~/.bashrc`, so Unix shells auto-load the token after `source ~/.bashrc` or starting a new terminal. Use Discord’s “Developer Mode → Copy Channel ID” before scraping.
 
 ---
 
@@ -37,7 +29,6 @@ This writes a clearly marked block to `~/.bashrc` so subsequent runs pick up the
 ```bash
 ripcord \
   --channel 123456789012345678 \
-  --guild 987654321098765432 \
   --days 3 \
   --keyword breach \
   --keyword poc \
@@ -58,11 +49,11 @@ Usage
 Tokens
   --token <value>    Provide token explicitly (optional when DISCORD_TOKEN exists)
 Core Flags
-  --channel <id>     REQUIRED channel ID  ·  --guild <id>   Jump links
+  --channel <id>     REQUIRED channel ID
   --days/--hours     Relative history (required) ·  --range start,end (UTC) absolute window
   --keyword <text>   Repeat for OR matches ·  --include-bots to retain bot posts
 Output
-  --format json|markdown|both  ·  --output <prefix>  ·  --max <n>  ·  --quiet/--verbose
+  --format json|markdown|both  ·  --output <prefix>  ·  --max <n>  ·  --quiet
 Performance
   --batch-size <1-100>          ·  --rate <req/s>
 Notes
@@ -97,3 +88,10 @@ Every file is intentionally flat to keep the repo approachable—ideal for quick
 - Markdown exports are designed for human review; JSON retains the normalized schema for tooling.
 
 Have ideas or want to add another output format? Crack open the relevant file (see the project layout table) and go wild.
+
+---
+
+## Contributing & Local Development
+- Clone the repo, run `go build ./...`, and keep changes scoped.
+- Follow `gofmt` + `staticcheck` before committing: `go fmt ./...` and `staticcheck ./...` (install via `go install honnef.co/go/tools/cmd/staticcheck@latest`).
+- Use short commit formats like `feat: add --range flag`; describe CLI behavior and attach sample logs/outputs in PR descriptions.
