@@ -1,8 +1,4 @@
-===============================================
-                  RIPCORD
-===============================================
-Research Indexed Platform for Channel Observation, Retrieval & Discovery
-Scrape • Index • Search • Research
+RIPCORD — Research Indexed Platform for Channel Observation, Retrieval & Discovery
 
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
