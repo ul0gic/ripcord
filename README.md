@@ -17,31 +17,38 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
 ## Install & Token Setup
 
-### Binary location (after `go install`)
+1. **Install the binary**
 
-| OS / Shell        | Path            |
-|-------------------|-----------------|
-| Linux, macOS      | `~/go/bin`      |
-| Other Unix (custom GOPATH) | `$(go env GOPATH)/bin` |
+   | OS / Shell | Path after `go install` |
+   |-----------|-------------------------|
+   | Linux, macOS | `~/go/bin` |
+   | Other Unix (custom GOPATH) | `$(go env GOPATH)/bin` |
 
-### Token workflow
+   ```bash
+   go install github.com/ul0gic/ripcord@latest
+   ```
 
-```bash
-go install github.com/ul0gic/ripcord@latest
-ripcord set-token "$DISCORD_TOKEN"
-source ~/.bashrc    # or your shell rc file
-```
+2. **Store your Discord token**
 
-| Shell | File updated |
-|-------|--------------|
-| bash  | `~/.bashrc`  |
-| zsh   | `~/.zshrc`   |
-| fish  | `~/.config/fish/config.fish` |
+   ```bash
+   ripcord set-token "$DISCORD_TOKEN"
+   ```
 
-1. `go install` places the binary in your Go bin directory (table above).
-2. `set-token` injects the export line into your shell config so every new shell inherits the token.
-3. Reload the shell (`source` command) after running `set-token`.
-4. Enable Discord’s Developer Mode and use **Copy Channel ID** on the channel you plan to scrape.
+   | Shell | Config touched |
+   |-------|----------------|
+   | bash  | `~/.bashrc`    |
+   | zsh   | `~/.zshrc`     |
+   | fish  | `~/.config/fish/config.fish` |
+
+   After running `set-token`, reload the shell:
+
+   ```bash
+   source ~/.bashrc   # or ~/.zshrc, etc.
+   ```
+
+3. **Prepare the channel**
+
+   Enable Discord’s Developer Mode and use **Copy Channel ID** on the channel you want to scrape. Pass that value to `--channel` when running Ripcord.
 
 ---
 
