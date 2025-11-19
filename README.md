@@ -1,17 +1,21 @@
-RIPCORD — Research Indexed Platform for Channel Observation, Retrieval & Discovery
-
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
+
+<h1 align="center">RIPCORD</h1>
+<p align="center">Research Indexed Platform for Channel Observation, Retrieval & Discovery</p>
 
 Ripcord is a no-database, no-frills research tool that lets you sweep a Discord channel and drop the results as JSON or Markdown directly into the directory you ran the command from. Tuned filters (time spans, keywords, user/bot controls) let you dig through history quickly without tripping Discord’s rate limits.
 
 ---
 
 ## Features at a Glance
-- **Token aware:** Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`.
-- **Flexible filters:** `--days`/`--hours` (required) or `--range`, plus repeatable `--keyword`, `--max`, and bot exclusion toggles.
-- **Portable output:** `--format json|markdown|both` and custom filename prefixes; files land in the current working directory.
-- **Rate-limit friendly:** Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats.
-- **Zero infrastructure:** Pure CLI workflow—no database, queues, or external storage required.
+
+| Feature | Details |
+|---------|---------|
+| Token Aware | Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`. |
+| Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--max`, and bot exclusion toggles. |
+| Portable Output | `--format json|markdown|both` and custom filename prefixes; files land in the current working directory. |
+| Rate-Limit Friendly | Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats. |
+| Zero Infrastructure | Pure CLI workflow—no database, queues, or external storage required. |
 
 ---
 
@@ -19,14 +23,16 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
 1. **Install the binary**
 
+   ```bash
+   go install github.com/ul0gic/ripcord@latest
+   ```
+
+   This drops the binary in the following locations:
+
    | OS / Shell | Path after `go install` |
    |-----------|-------------------------|
    | Linux, macOS | `~/go/bin` |
    | Other Unix (custom GOPATH) | `$(go env GOPATH)/bin` |
-
-   ```bash
-   go install github.com/ul0gic/ripcord@latest
-   ```
 
 2. **Store your Discord token**
 
@@ -34,7 +40,9 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
    ripcord set-token "$DISCORD_TOKEN"
    ```
 
-   | Shell | Config touched |
+   This adds the token export to these shell config files:
+
+   | Shell | Config Touched |
    |-------|----------------|
    | bash  | `~/.bashrc`    |
    | zsh   | `~/.zshrc`     |
@@ -50,21 +58,6 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
    Enable Discord’s Developer Mode and use **Copy Channel ID** on the channel you want to scrape. Pass that value to `--channel` when running Ripcord.
 
----
-
-## Quick Start
-```bash
-ripcord \
-  --channel 123456789012345678 \
-  --days 3 \
-  --keyword breach \
-  --keyword poc \
-  --format both
-```
-Result: `discord_123456789012345678_<timestamp>.json` and `.md` written into the current directory, along with a console summary.
-
----
-
 ## CLI Reference
 
 | Category | Flags / Description |
@@ -72,9 +65,9 @@ Result: `discord_123456789012345678_<timestamp>.json` and `.md` written into the
 | Usage | `ripcord --channel <id> [flags]`  Scrape a channel and export history |
 | Token | `ripcord set-token <token>`  Writes the shell export so tokens persist |
 | Required | `--channel <id>` |
-| Relative window | `--days <n>` and/or `--hours <n>` (one must be set) |
-| Absolute window | `--range start,end` (RFC3339 UTC timestamps) |
-| Content filters | Repeat `--keyword foo`; add `--include-bots` to keep bot posts |
+| Relative Window | `--hours <1-24>` for short runs or `--days <n>` for longer spans (at least one required) |
+| Range | `--range start,end` (RFC3339 UTC timestamps) |
+| Content Filters | Repeat `--keyword foo`; add `--include-bots` to keep bot posts |
 | Output | `--format json|markdown|both` · `--output <prefix>` · `--max <n>` · `--quiet` |
 | Performance | `--batch-size <1-100>` · `--rate <req/s>` |
 | Notes | Tokens are sourced from `--token`, `DISCORD_TOKEN`, or `set-token`. Stay within Discord ToS and rate limits. |
@@ -83,11 +76,11 @@ Result: `discord_123456789012345678_<timestamp>.json` and `.md` written into the
 
 | Goal | Example |
 |------|---------|
-| Scrape last 24h | `ripcord --channel 111... --days 1`
-| Scrape last 90m | `ripcord --channel 111... --hours 1 --days 0`
-| Absolute window | `ripcord --channel 111... --range "2025-01-01T00:00:00Z,2025-01-02T00:00:00Z"`
-| Keyword filter | `ripcord --channel 111... --days 2 --keyword breach --keyword poc`
-| Markdown export | `ripcord --channel 111... --days 1 --format markdown`
+| Scrape Last 24h | `ripcord --channel 12345 --days 1`
+| Scrape Last 12h | `ripcord --channel 12345 --hours 12`
+| Range | `ripcord --channel 12345 --range "2025-01-01T00:00:00Z,2025-01-02T00:00:00Z"`
+| Keyword Filter | `ripcord --channel 12345 --days 2 --keyword breach --keyword poc`
+| Markdown Export | `ripcord --channel 12345 --days 1 --format markdown`
 
 ---
 
