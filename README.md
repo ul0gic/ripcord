@@ -1,9 +1,8 @@
 ===============================================
- RIPCORD | Research Indexed Platform for Channel Observation, Retrieval & Discovery
+                  RIPCORD
 ===============================================
+Research Indexed Platform for Channel Observation, Retrieval & Discovery
 Scrape • Index • Search • Research
-
-▣ Language: Go 1.24.4  ·  ▣ Target: Discord channel export CLI  ·  ▣ Footprint: single static binary
 
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
