@@ -16,9 +16,9 @@ Tokens
 Core Flags
   --channel <id>                   REQUIRED. Channel ID to scrape
   --guild <id>                     Guild/server ID (enables jump links)
-  --months-back <n>                Months of history (default 3)
-  --since <RFC3339>                Absolute start timestamp
-  --until <RFC3339>                Absolute end timestamp
+  --days <n>                       Relative days window (required if hours absent)
+  --hours <n>                      Relative hours window (required if days absent)
+  --range start,end                Absolute RFC3339 window (UTC)
   --keyword <text>                 Case-insensitive filter; repeat flag
   --include-bots                   Include bot-authored messages
 
@@ -33,8 +33,8 @@ Performance
   --rate <req/s>                   Max Discord requests/sec (default 4)
 
 Examples
-  # Pull three months of history into JSON
-  %s --channel 123 --guild 999 --months-back 3
+  # Pull last seven days of history into JSON
+  %s --channel 123 --guild 999 --days 7
 
   # Filter by keywords and export Markdown
   %s --channel 123 --keyword breach --keyword poc --format markdown

@@ -30,6 +30,7 @@ type scrapeOptions struct {
 	BatchSize   int
 	Since       *time.Time
 	Until       *time.Time
+	Quiet       bool
 }
 
 func (m *multiValue) String() string {
@@ -53,9 +54,9 @@ func parseConfig() (*runConfig, error) {
 	token := flag.String("token", "", "Discord bot/user token (or set DISCORD_TOKEN)")
 	channel := flag.String("channel", "", "Channel ID to scrape (required)")
 	guild := flag.String("guild", "", "Guild/server ID for jump links (optional)")
-	monthsBack := flag.Int("months-back", 3, "How many months of history to pull (ignored if --since provided)")
-	sinceStr := flag.String("since", "", "Only include messages on/after this RFC3339 timestamp")
-	untilStr := flag.String("until", "", "Only include messages on/before this RFC3339 timestamp")
+	daysBack := flag.Int("days", 0, "Relative days window (required if --hours absent)")
+	hoursBack := flag.Int("hours", 0, "Relative hours window (required if --days absent)")
+	rangeStr := flag.String("range", "", "Absolute window start,end (RFC3339)")
 	batchSize := flag.Int("batch-size", 100, "Messages per request (1-100)")
 	maxMessages := flag.Int("max", 0, "Stop after collecting this many messages (0 = unlimited)")
 	rateLimit := flag.Float64("rate", 4.0, "Max API requests per second")
@@ -104,28 +105,24 @@ func parseConfig() (*runConfig, error) {
 	}
 
 	var since *time.Time
-	if strings.TrimSpace(*sinceStr) != "" {
-		parsed, err := parseTimestamp(*sinceStr)
-		if err != nil {
-			return nil, fmt.Errorf("invalid --since value: %w", err)
-		}
-		since = &parsed
-	} else if *monthsBack > 0 {
-		cutoff := time.Now().UTC().AddDate(0, -*monthsBack, 0)
-		since = &cutoff
-	}
-
 	var until *time.Time
-	if strings.TrimSpace(*untilStr) != "" {
-		parsed, err := parseTimestamp(*untilStr)
+	if strings.TrimSpace(*rangeStr) != "" {
+		start, end, err := parseRange(*rangeStr)
 		if err != nil {
-			return nil, fmt.Errorf("invalid --until value: %w", err)
+			return nil, fmt.Errorf("invalid --range value: %w", err)
 		}
-		until = &parsed
-	}
-
-	if since != nil && until != nil && since.After(*until) {
-		return nil, errors.New("--since must be before --until")
+		since = &start
+		until = &end
+	} else if *daysBack > 0 || *hoursBack > 0 {
+		totalHours := (*daysBack * 24) + *hoursBack
+		if totalHours <= 0 {
+			return nil, errors.New("days/hours window must be positive")
+		}
+		dur := time.Duration(totalHours) * time.Hour
+		cutoff := time.Now().UTC().Add(-dur)
+		since = &cutoff
+	} else {
+		return nil, errors.New("specify --range or a --days/--hours window")
 	}
 
 	keywordList := make([]string, 0, len(keywords))
@@ -156,6 +153,7 @@ func parseConfig() (*runConfig, error) {
 			BatchSize:   *batchSize,
 			Since:       since,
 			Until:       until,
+			Quiet:       *quiet,
 		},
 	}
 
@@ -176,6 +174,29 @@ func parseTimestamp(value string) (time.Time, error) {
 		return parsed.UTC(), nil
 	}
 	return time.Time{}, err
+}
+
+func parseRange(value string) (time.Time, time.Time, error) {
+	v := strings.TrimSpace(value)
+	parts := strings.Split(v, ",")
+	if len(parts) != 2 {
+		parts = strings.Split(v, "..")
+		if len(parts) != 2 {
+			return time.Time{}, time.Time{}, errors.New("range must be start,end")
+		}
+	}
+	start, err := parseTimestamp(parts[0])
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid start: %w", err)
+	}
+	end, err := parseTimestamp(parts[1])
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid end: %w", err)
+	}
+	if start.After(end) {
+		return time.Time{}, time.Time{}, errors.New("range start must be before end")
+	}
+	return start, end, nil
 }
 
 func printUsage(w io.Writer, bin string) {

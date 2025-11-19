@@ -2,13 +2,13 @@ RIPCORD — Research Indexed Platform for Channel Observation, Retrieval & Disco
 
 [![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
-Ripcord is a no-database, no-frills reconnaissance tool that lets you sweep a Discord channel and drop the results as JSON or Markdown directly into the directory you ran the command from. Tuned filters (time spans, keywords, user/bot controls) let you dig through history quickly without tripping Discord’s rate limits.
+Ripcord is a no-database, no-frills research tool that lets you sweep a Discord channel and drop the results as JSON or Markdown directly into the directory you ran the command from. Tuned filters (time spans, keywords, user/bot controls) let you dig through history quickly without tripping Discord’s rate limits.
 
 ---
 
 ## Features at a Glance
 - **Token aware:** Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`.
-- **Flexible filters:** `--months-back`, `--since`, `--until`, repeatable `--keyword`, `--max`, and bot exclusion toggles.
+- **Flexible filters:** `--days`/`--hours` (required) or `--range`, plus repeatable `--keyword`, `--max`, and bot exclusion toggles.
 - **Portable output:** `--format json|markdown|both` and custom filename prefixes; files land in the current working directory.
 - **Rate-limit friendly:** Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats.
 - **Zero infrastructure:** Pure CLI workflow—no database, queues, or external storage required.
@@ -27,9 +27,9 @@ The binary lands in `$(go env GOPATH)/bin` (usually `~/go/bin`).
 ## One-Time Token Setup
 ```
 ripcord set-token "$DISCORD_TOKEN"
-source ~/.bashrc    # or open a new shell
+source ~/.bashrc    # reload so future shells inherit the token
 ```
-This writes a clearly marked block to `~/.bashrc` so subsequent runs pick up the token automatically. You can still override with `--token` whenever needed.
+This writes a clearly marked block to `~/.bashrc` so subsequent runs pick up the token automatically. Open a new shell (or re-source) before running Ripcord, and you can still override with `--token` whenever needed.
 
 ---
 
@@ -38,7 +38,7 @@ This writes a clearly marked block to `~/.bashrc` so subsequent runs pick up the
 ripcord \
   --channel 123456789012345678 \
   --guild 987654321098765432 \
-  --months-back 3 \
+  --days 3 \
   --keyword breach \
   --keyword poc \
   --format both
@@ -59,10 +59,10 @@ Tokens
   --token <value>    Provide token explicitly (optional when DISCORD_TOKEN exists)
 Core Flags
   --channel <id>     REQUIRED channel ID  ·  --guild <id>   Jump links
-  --months-back <n>  Relative history     ·  --since/--until <RFC3339> absolute range
+  --days/--hours     Relative history (required) ·  --range start,end (UTC) absolute window
   --keyword <text>   Repeat for OR matches ·  --include-bots to retain bot posts
 Output
-  --format json|markdown|both  ·  --output <prefix>  ·  --max <n>  ·  --quiet
+  --format json|markdown|both  ·  --output <prefix>  ·  --max <n>  ·  --quiet/--verbose
 Performance
   --batch-size <1-100>          ·  --rate <req/s>
 Notes

@@ -99,6 +99,9 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 		}
 
 		before = batch[len(batch)-1].ID
+		if !opts.Quiet {
+			fmt.Printf("pulled %d messages so far\n", len(results))
+		}
 	}
 
 	return results, stats, nil
