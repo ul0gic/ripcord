@@ -13,7 +13,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 |---------|---------|
 | Token Aware | Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`. |
 | Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--max`, and bot exclusion toggles. |
-| Portable Output | `--format json|markdown|both` and custom filename prefixes; files land in the current working directory. |
+| Portable Output | `--format json|markdown|both` and custom filename prefixes; both formats land in the current working directory. |
 | Rate-Limit Friendly | Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats. |
 | Zero Infrastructure | Pure CLI workflow—no database, queues, or external storage required. |
 
