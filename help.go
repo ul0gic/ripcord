@@ -27,10 +27,6 @@ Output
   --max <n>                        Stop after N messages (0=all)
   --quiet                          Only print errors
 
-Performance
-  --batch-size <1-100>             Discord page size (default 100)
-  --rate <req/s>                   Max Discord requests/sec (default 4)
-
 Examples
   # Pull last seven days of history into JSON
   %s --channel 123 --guild 999 --days 7
@@ -43,7 +39,6 @@ Examples
 
 Notes
   • Tokens can come from --token, DISCORD_TOKEN, or set-token.
-  • All filters are applied client-side; respect Discord rate limits.
   • Use multiple --keyword flags for OR-style keyword matching.
 
 `

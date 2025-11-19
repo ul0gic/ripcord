@@ -16,7 +16,6 @@ type runConfig struct {
 	Token        string
 	OutputPrefix string
 	Format       string
-	RateLimit    float64
 	Quiet        bool
 	Options      scrapeOptions
 }
@@ -27,7 +26,6 @@ type scrapeOptions struct {
 	Keywords    []string
 	IncludeBots bool
 	MaxMessages int
-	BatchSize   int
 	Since       *time.Time
 	Until       *time.Time
 	Quiet       bool
@@ -57,9 +55,7 @@ func parseConfig() (*runConfig, error) {
 	daysBack := flag.Int("days", 0, "Relative days window (required if --hours absent)")
 	hoursBack := flag.Int("hours", 0, "Relative hours window (required if --days absent)")
 	rangeStr := flag.String("range", "", "Absolute window start,end (RFC3339)")
-	batchSize := flag.Int("batch-size", 100, "Messages per request (1-100)")
 	maxMessages := flag.Int("max", 0, "Stop after collecting this many messages (0 = unlimited)")
-	rateLimit := flag.Float64("rate", 4.0, "Max API requests per second")
 	includeBots := flag.Bool("include-bots", false, "Include messages from bot accounts")
 	format := flag.String("format", "json", "Output format: json, markdown, or both")
 	output := flag.String("output", "", "Output filename prefix (default discord_<channel>_<timestamp>)")
@@ -84,14 +80,6 @@ func parseConfig() (*runConfig, error) {
 
 	if *channel == "" {
 		return nil, errors.New("--channel is required")
-	}
-
-	if *batchSize < 1 || *batchSize > maxBatchSize {
-		return nil, fmt.Errorf("batch-size must be between 1 and %d", maxBatchSize)
-	}
-
-	if *rateLimit <= 0 {
-		return nil, errors.New("rate must be greater than zero")
 	}
 
 	fmtChoice := strings.ToLower(strings.TrimSpace(*format))
@@ -142,7 +130,6 @@ func parseConfig() (*runConfig, error) {
 		Token:        resolvedToken,
 		OutputPrefix: prefix,
 		Format:       fmtChoice,
-		RateLimit:    *rateLimit,
 		Quiet:        *quiet,
 		Options: scrapeOptions{
 			ChannelID:   *channel,
@@ -150,7 +137,6 @@ func parseConfig() (*runConfig, error) {
 			Keywords:    keywordList,
 			IncludeBots: *includeBots,
 			MaxMessages: *maxMessages,
-			BatchSize:   *batchSize,
 			Since:       since,
 			Until:       until,
 			Quiet:       *quiet,

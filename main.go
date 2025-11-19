@@ -31,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	client := NewDiscordClient(cfg.Token, cfg.RateLimit)
+	client := NewDiscordClient(cfg.Token)
 	messages, stats, err := client.ScrapeChannel(cfg.Options)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "scrape failed:", err)

@@ -19,11 +19,9 @@ type DiscordClient struct {
 	lastRequest time.Time
 }
 
-func NewDiscordClient(token string, rate float64) *DiscordClient {
-	interval := time.Duration(float64(time.Second) / rate)
-	if interval < 0 {
-		interval = 0
-	}
+func NewDiscordClient(token string) *DiscordClient {
+	base := time.Second
+	interval := time.Duration(float64(base) / defaultRateLimit)
 	return &DiscordClient{
 		token:       token,
 		httpClient:  &http.Client{Timeout: 15 * time.Second},
@@ -38,7 +36,7 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 	keywords := lowerKeywords(opts.Keywords)
 
 	for {
-		batch, metrics, err := c.fetchBatch(opts.ChannelID, before, opts.BatchSize)
+		batch, metrics, err := c.fetchBatch(opts.ChannelID, before, maxBatchSize)
 		stats.Requests += metrics.requests
 		stats.RateLimitHits += metrics.rateLimitHits
 
