@@ -10,11 +10,11 @@ Ripcord is a no-database, no-frills reconnaissance tool that lets you sweep a Di
 ---
 
 ## Features at a Glance
-- ▣ **Token aware:** Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`.
-- ▣ **Flexible filters:** `--months-back`, `--since`, `--until`, repeatable `--keyword`, `--max`, and bot exclusion toggles.
-- ▣ **Portable output:** `--format json|markdown|both` and custom filename prefixes; files land in the current working directory.
-- ▣ **Rate-limit friendly:** Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats.
-- ▣ **Zero infrastructure:** Pure CLI workflow—no database, queues, or external storage required.
+- **Token aware:** Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`.
+- **Flexible filters:** `--months-back`, `--since`, `--until`, repeatable `--keyword`, `--max`, and bot exclusion toggles.
+- **Portable output:** `--format json|markdown|both` and custom filename prefixes; files land in the current working directory.
+- **Rate-limit friendly:** Adjustable `--rate` and `--batch-size`, automatic retry/backoff, and detailed scrape stats.
+- **Zero infrastructure:** Pure CLI workflow—no database, queues, or external storage required.
 
 ---
 
@@ -94,9 +94,9 @@ Every file is intentionally flat to keep the repo approachable—ideal for quick
 ---
 
 ## Notes & Etiquette
-- ▣ Operate within Discord’s Terms of Service and only scrape content you are authorized to access.
-- ▣ User tokens can expire; rerun `ripcord set-token <new-token>` if you hit 401s.
-- ▣ Bump `--rate` gently—Discord enforces global ceilings.
-- ▣ Markdown exports are designed for human review; JSON retains the normalized schema for tooling.
+- Operate within Discord’s Terms of Service and only scrape content you are authorized to access.
+- User tokens can expire; rerun `ripcord set-token <new-token>` if you hit 401s.
+- Bump `--rate` gently—Discord enforces global ceilings.
+- Markdown exports are designed for human review; JSON retains the normalized schema for tooling.
 
 Have ideas or want to add another output format? Crack open the relevant file (see the project layout table) and go wild.
