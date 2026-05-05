@@ -7,25 +7,25 @@ const usageText = `
 
 Usage
   %s --channel <id> [flags]        Scrape a channel and export history
-  %s set-token <discord_token>     Store token in ~/.bashrc once
+  %s set-token <discord_token>     Store token in ~/.discord.env (mode 0600)
 
 Tokens
-  --token <value>                  Provide token explicitly (optional when
-                                   DISCORD_TOKEN or set-token is used)
+  Resolution order: --token → $DISCORD_TOKEN → $DISCORD_AUTH_TOKEN → ~/.discord.env
+  --token <value>                  Provide token explicitly (overrides env + file)
 
 Core Flags
   --channel <id>                   REQUIRED. Channel ID to scrape
-  --days <n>                       Relative days window (required if hours absent)
-  --hours <n>                      Relative hours window (required if days absent)
-  --range start,end                Absolute RFC3339 window (UTC)
-  --keyword <text>                 Case-insensitive filter; repeat flag
-  --user <name>                    Filter by username/display name; repeatable
+  --days <n>                       Relative days window (required if --hours absent)
+  --hours <n>                      Relative hours window (required if --days absent)
+  --range start,end                Absolute RFC3339 window, e.g. 2025-01-01T00:00:00Z,2025-01-02T00:00:00Z
+  --keyword <text>                 Case-insensitive substring filter (repeatable, OR-matched)
+  --user <name|id>                 Filter by username, display name, or user ID (repeatable)
 
 Output
-  --format json|markdown|both      Export format (default json)
+  --format json|markdown|both      Export format (default json; "md" accepted as alias)
   --output <prefix>                Filename prefix (default discord_<channel>_<ts>)
-  --max <n>                        Stop after N messages (0=all)
-  --quiet                          Only print errors
+  --max <n>                        Stop after N messages (0 = unlimited)
+  --quiet                          Suppress progress output (errors still print)
 
 Examples
   # Pull last seven days of history into JSON
@@ -38,7 +38,8 @@ Examples
   %s set-token $DISCORD_TOKEN
 
 Notes
-  • Tokens can come from --token, DISCORD_TOKEN, or set-token.
-  • Use multiple --keyword flags for OR-style keyword matching.
+  • set-token writes ~/.discord.env (mode 0600) — no shell sourcing required.
+  • Bot messages are always skipped automatically.
+  • Output files land in the current working directory.
 
 `

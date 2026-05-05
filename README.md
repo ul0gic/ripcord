@@ -12,7 +12,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 | Feature | Details |
 |---------|---------|
 | Token Aware | Works with `--token`, the `DISCORD_TOKEN` env var, or the built-in `set-token` subcommand that writes a dedicated `~/.discord.env` file (mode 0600) which Ripcord reads automatically. |
-| Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--user`, and `--max` filters (bots are skipped automatically). |
+| Flexible Filters | Use `--hours <n>` for short runs, `--days <n>` for longer spans, or `--range`, plus repeatable `--keyword`, `--user`, and `--max` filters (bots are skipped automatically). |
 | Portable Output | `--format json|markdown|both` and custom filename prefixes; both formats land in the current working directory. |
 | Zero Infrastructure | Pure CLI workflow—no database, queues, or external storage required. |
 
@@ -54,11 +54,11 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 | Usage | `ripcord --channel <id> [flags]`   Scrape a channel and export history |
 | Token | `ripcord set-token <token>`  Writes the token to `~/.discord.env` (mode 0600) so it persists across runs |
 | Required | `--channel <id>` |
-| Relative Window | `--hours <1-24>` for short runs or `--days <n>` for longer spans (at least one required) |
+| Relative Window | `--hours <n>` for short runs or `--days <n>` for longer spans (at least one required) |
 | Range | `--range start,end` (RFC3339 UTC timestamps) |
 | Content Filters | Repeat `--keyword foo`; add `--user ul0gic` to target authors |
 | Output | `--format json|markdown|both` · `--output <prefix>` · `--max <n>` · `--quiet` |
-| Notes | Tokens are resolved in order: `--token` → `$DISCORD_TOKEN` → `~/.discord.env` (written by `set-token`). Stay within Discord ToS. |
+| Notes | Tokens are resolved in order: `--token` → `$DISCORD_TOKEN` → `$DISCORD_AUTH_TOKEN` → `~/.discord.env` (written by `set-token`). Stay within Discord ToS. |
 
 ### CLI Examples
 
@@ -101,8 +101,8 @@ Have ideas or want to add another output format? Crack open the relevant file (s
 ---
 
 ## Contributing & Local Development
-- Clone the repo, run `go build ./...`, and keep changes scoped.
-- Follow `gofmt` + `staticcheck` before committing: `go fmt ./...` and `staticcheck ./...` (install via `go install honnef.co/go/tools/cmd/staticcheck@latest`).
+- Clone the repo, run `make build` (or `go build ./...`), and keep changes scoped.
+- Run `make verify` before pushing — runs `go vet`, `go test -race`, and `golangci-lint` (the same gates CI enforces). Install golangci-lint via `go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest`.
 - Use short commit formats like `feat: add --range flag`; describe CLI behavior and attach sample logs/outputs in PR descriptions.
 
 I am not responsible for what people do with this research tool.
