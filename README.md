@@ -1,4 +1,4 @@
-[![Go Version](https://img.shields.io/badge/go-1.26.2+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
+[![CI](https://github.com/ul0gic/ripcord/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ul0gic/ripcord/actions/workflows/ci.yml) [![CodeQL](https://github.com/ul0gic/ripcord/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/ul0gic/ripcord/actions/workflows/codeql.yml) [![Release](https://img.shields.io/github/v/release/ul0gic/ripcord?sort=semver&color=blue)](https://github.com/ul0gic/ripcord/releases) [![Go Version](https://img.shields.io/badge/go-1.26.2+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS%20%7C%20windows-blue)](#) [![Status](https://img.shields.io/badge/status-beta-yellow)](#)
 
 <h1 align="center">RIPCORD</h1>
 <p align="center">Research Indexed Platform for Channel Observation, Retrieval & Discovery</p>
