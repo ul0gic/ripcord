@@ -1,4 +1,4 @@
-[![Go Version](https://img.shields.io/badge/go-1.24+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
+[![Go Version](https://img.shields.io/badge/go-1.26.2+-00ADD8?logo=go&logoColor=white)](#) [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-blue)](#) [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
 <h1 align="center">RIPCORD</h1>
 <p align="center">Research Indexed Platform for Channel Observation, Retrieval & Discovery</p>
@@ -11,7 +11,7 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
 | Feature | Details |
 |---------|---------|
-| Token Aware | Works with either `--token`, `DISCORD_TOKEN`, or the built-in `set-token` subcommand that injects credentials into `~/.bashrc`. |
+| Token Aware | Works with `--token`, the `DISCORD_TOKEN` env var, or the built-in `set-token` subcommand that writes a dedicated `~/.discord.env` file (mode 0600) which Ripcord reads automatically. |
 | Flexible Filters | Use `--hours` (1-24) for short runs, `--days` for longer spans, or `--range`, plus repeatable `--keyword`, `--user`, and `--max` filters (bots are skipped automatically). |
 | Portable Output | `--format json|markdown|both` and custom filename prefixes; both formats land in the current working directory. |
 | Zero Infrastructure | Pure CLI workflow—no database, queues, or external storage required. |
@@ -39,19 +39,9 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
    ripcord set-token "$DISCORD_TOKEN"
    ```
 
-   This adds the token export to these shell config files:
+   This writes the token to `~/.discord.env` with permissions `0600`. Ripcord reads the file automatically on each run, so no shell reload or `source` step is required. Your shell config (`~/.bashrc`, `~/.zshrc`, etc.) is left untouched.
 
-   | Shell | Config Touched |
-   |-------|----------------|
-   | bash  | `~/.bashrc`    |
-   | zsh   | `~/.zshrc`     |
-   | fish  | `~/.config/fish/config.fish` |
-
-   After running `set-token`, reload the shell:
-
-   ```bash
-   source ~/.bashrc   # or ~/.zshrc, etc.
-   ```
+   If you'd rather export the token yourself (e.g. in CI or a per-shell session), set the `DISCORD_TOKEN` environment variable directly — it takes precedence over the file.
 
 3. **Prepare the channel**
 
@@ -61,14 +51,14 @@ Ripcord is a no-database, no-frills research tool that lets you sweep a Discord 
 
 | Category | Flags / Description |
 |----------|---------------------|
-| Usage | `ripcord --channel <id> [flags]`  Scrape a channel and export history |
-| Token | `ripcord set-token <token>`  Writes the shell export so tokens persist |
+| Usage | `ripcord --channel <id> [flags]`   Scrape a channel and export history |
+| Token | `ripcord set-token <token>`  Writes the token to `~/.discord.env` (mode 0600) so it persists across runs |
 | Required | `--channel <id>` |
 | Relative Window | `--hours <1-24>` for short runs or `--days <n>` for longer spans (at least one required) |
 | Range | `--range start,end` (RFC3339 UTC timestamps) |
 | Content Filters | Repeat `--keyword foo`; add `--user ul0gic` to target authors |
 | Output | `--format json|markdown|both` · `--output <prefix>` · `--max <n>` · `--quiet` |
-| Notes | Tokens are sourced from `--token`, `DISCORD_TOKEN`, or `set-token`. Stay within Discord ToS. |
+| Notes | Tokens are resolved in order: `--token` → `$DISCORD_TOKEN` → `~/.discord.env` (written by `set-token`). Stay within Discord ToS. |
 
 ### CLI Examples
 
@@ -92,7 +82,7 @@ ripcord/
 ├─ help.go          # ASCII usage banner template
 ├─ client.go        # Discord API client, pagination, keyword filters
 ├─ export.go        # JSON + Markdown writers and path helpers
-├─ token.go         # Set-token implementation, ~/.bashrc manipulation
+├─ token.go         # Set-token implementation, ~/.discord.env read/write
 ├─ types.go         # Shared data structures for messages, exports, stats
 ├─ constants.go     # API base URL, user agent, batch size caps
 └─ go.mod           # Minimal module definition (no external deps yet)

@@ -17,11 +17,12 @@ func main() {
 			fmt.Fprintln(os.Stderr, "usage: ripcord set-token <discord_token>")
 			os.Exit(1)
 		}
-		if err := setTokenInBashrc(token); err != nil {
+		path, err := writeDiscordEnvFile(token)
+		if err != nil {
 			fmt.Fprintln(os.Stderr, "failed to set token:", err)
 			os.Exit(1)
 		}
-		fmt.Println("✅ Token stored in ~/.bashrc. Run 'source ~/.bashrc' or open a new shell to apply.")
+		fmt.Printf("✅ Token stored in %s\n", path)
 		return
 	}
 
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	client := NewDiscordClient(cfg.Token)
-	messages, stats, err := client.ScrapeChannel(cfg.Options)
+	messages, stats, err := client.ScrapeChannel(&cfg.Options)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "scrape failed:", err)
 		os.Exit(1)
@@ -59,7 +60,7 @@ func main() {
 		Stats: stats,
 	}
 
-	outputs, err := writeOutputs(export, cfg)
+	outputs, err := writeOutputs(&export, cfg)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "write failed:", err)
 		os.Exit(1)

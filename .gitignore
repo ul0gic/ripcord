@@ -1,0 +1,28 @@
+# Build output
+/bin/
+/ripcord
+*.exe
+
+# GoReleaser output
+/dist/
+
+# Coverage
+coverage.out
+coverage.html
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Credentials — defense in depth (token lives at ~/.discord.env, not in repo)
+.env
+.env.*
+!.env.example
+.discord.env
+
+# Scrape output (json/markdown exports land in CWD by default)
+discord_*.json
+discord_*.md

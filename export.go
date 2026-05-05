@@ -9,13 +9,13 @@ import (
 	"time"
 )
 
-func writeOutputs(export Export, cfg *runConfig) ([]string, error) {
+func writeOutputs(export *Export, cfg *runConfig) ([]string, error) {
 	var written []string
 	switch cfg.Format {
 	case "json":
 		path := cfg.OutputPrefix
 		if !strings.HasSuffix(strings.ToLower(path), ".json") {
-			path = path + ".json"
+			path += ".json"
 		}
 		if err := writeJSON(path, export); err != nil {
 			return nil, err
@@ -50,19 +50,23 @@ func ensureExtension(prefix, ext string) string {
 	return cleaned + ext
 }
 
-func writeJSON(path string, export Export) error {
+func writeJSON(path string, export *Export) (err error) {
 	file, err := os.Create(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
 	return enc.Encode(export)
 }
 
-func writeMarkdown(path string, export Export) error {
+func writeMarkdown(path string, export *Export) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# Discord export for channel %s\n\n", export.ChannelID)
 	fmt.Fprintf(&b, "- Exported at: %s\n", export.ExportedAt.Format(time.RFC3339))
@@ -89,31 +93,34 @@ func writeMarkdown(path string, export Export) error {
 		fmt.Fprintf(&b, "- Rate limit waits: %d\n", export.Stats.RateLimitHits)
 	}
 
-	for _, msg := range export.Messages {
-		fmt.Fprintf(&b, "\n## %s — %s\n\n", msg.Timestamp.Format("2006-01-02 15:04:05 MST"), describeAuthor(msg.Author))
+	for i := range export.Messages {
+		msg := &export.Messages[i]
+		fmt.Fprintf(&b, "\n## %s — %s\n\n", msg.Timestamp.Format("2006-01-02 15:04:05 MST"), describeAuthor(&msg.Author))
 		if msg.Content != "" {
 			fmt.Fprintf(&b, "%s\n\n", msg.Content)
 		}
 		if len(msg.Attachments) > 0 {
-			fmt.Fprintf(&b, "**Attachments:**\n")
-			for _, att := range msg.Attachments {
+			fmt.Fprintln(&b, "**Attachments:**")
+			for j := range msg.Attachments {
+				att := &msg.Attachments[j]
 				fmt.Fprintf(&b, "- [%s](%s)\n", att.Filename, att.URL)
 			}
-			fmt.Fprintf(&b, "\n")
+			fmt.Fprintln(&b)
 		}
 		if len(msg.Reactions) > 0 {
 			parts := make([]string, 0, len(msg.Reactions))
-			for _, react := range msg.Reactions {
+			for j := range msg.Reactions {
+				react := &msg.Reactions[j]
 				parts = append(parts, fmt.Sprintf("%s ×%d", react.Emoji, react.Count))
 			}
 			fmt.Fprintf(&b, "**Reactions:** %s\n\n", strings.Join(parts, ", "))
 		}
 	}
 
-	return os.WriteFile(filepath.Clean(path), []byte(b.String()), 0o644)
+	return os.WriteFile(filepath.Clean(path), []byte(b.String()), 0o600)
 }
 
-func describeAuthor(author Author) string {
+func describeAuthor(author *Author) string {
 	if author.DisplayName != "" && author.DisplayName != author.Username {
 		return fmt.Sprintf("%s (%s)", author.DisplayName, author.Username)
 	}

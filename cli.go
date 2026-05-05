@@ -65,82 +65,34 @@ func parseConfig() (*runConfig, error) {
 
 	flag.Parse()
 
-	resolvedToken := strings.TrimSpace(*token)
+	resolvedToken := resolveToken(*token)
 	if resolvedToken == "" {
-		resolvedToken = strings.TrimSpace(os.Getenv("DISCORD_TOKEN"))
-	}
-	if resolvedToken == "" {
-		resolvedToken = strings.TrimSpace(os.Getenv("DISCORD_AUTH_TOKEN"))
-	}
-
-	if resolvedToken == "" {
-		return nil, errors.New("missing Discord token (pass --token or set DISCORD_TOKEN)")
+		return nil, errors.New("missing Discord token (pass --token, set DISCORD_TOKEN, or run `ripcord set-token`)")
 	}
 
 	if *channel == "" {
 		return nil, errors.New("--channel is required")
 	}
 
-	fmtChoice := strings.ToLower(strings.TrimSpace(*format))
-	switch fmtChoice {
-	case "json", "markdown", "md", "both":
-	default:
-		return nil, errors.New("format must be one of json, markdown, or both")
-	}
-	if fmtChoice == "md" {
-		fmtChoice = "markdown"
+	fmtChoice, err := normalizeFormat(*format)
+	if err != nil {
+		return nil, err
 	}
 
-	var since *time.Time
-	var until *time.Time
-	if strings.TrimSpace(*rangeStr) != "" {
-		start, end, err := parseRange(*rangeStr)
-		if err != nil {
-			return nil, fmt.Errorf("invalid --range value: %w", err)
-		}
-		since = &start
-		until = &end
-	} else if *daysBack > 0 || *hoursBack > 0 {
-		totalHours := (*daysBack * 24) + *hoursBack
-		if totalHours <= 0 {
-			return nil, errors.New("days/hours window must be positive")
-		}
-		dur := time.Duration(totalHours) * time.Hour
-		cutoff := time.Now().UTC().Add(-dur)
-		since = &cutoff
-	} else {
-		return nil, errors.New("specify --range or a --days/--hours window")
-	}
-
-	keywordList := make([]string, 0, len(keywords))
-	for _, kw := range keywords {
-		if trimmed := strings.ToLower(strings.TrimSpace(kw)); trimmed != "" {
-			keywordList = append(keywordList, trimmed)
-		}
-	}
-
-	userList := make([]string, 0, len(users))
-	for _, u := range users {
-		if trimmed := strings.ToLower(strings.TrimSpace(u)); trimmed != "" {
-			userList = append(userList, trimmed)
-		}
-	}
-
-	prefix := strings.TrimSpace(*output)
-	if prefix == "" {
-		timestamp := time.Now().UTC().Format("20060102T150405Z")
-		prefix = fmt.Sprintf("discord_%s_%s", *channel, timestamp)
+	since, until, err := resolveTimeWindow(*rangeStr, *daysBack, *hoursBack)
+	if err != nil {
+		return nil, err
 	}
 
 	cfg := &runConfig{
 		Token:        resolvedToken,
-		OutputPrefix: prefix,
+		OutputPrefix: resolveOutputPrefix(*output, *channel),
 		Format:       fmtChoice,
 		Quiet:        *quiet,
 		Options: scrapeOptions{
 			ChannelID:   *channel,
-			Keywords:    keywordList,
-			Users:       userList,
+			Keywords:    normalizeStringList(keywords),
+			Users:       normalizeStringList(users),
 			MaxMessages: *maxMessages,
 			Since:       since,
 			Until:       until,
@@ -149,6 +101,68 @@ func parseConfig() (*runConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func resolveToken(flagValue string) string {
+	if t := strings.TrimSpace(flagValue); t != "" {
+		return t
+	}
+	if t := strings.TrimSpace(os.Getenv("DISCORD_TOKEN")); t != "" {
+		return t
+	}
+	if t := strings.TrimSpace(os.Getenv("DISCORD_AUTH_TOKEN")); t != "" {
+		return t
+	}
+	return readTokenFromEnvFile()
+}
+
+func normalizeFormat(format string) (string, error) {
+	choice := strings.ToLower(strings.TrimSpace(format))
+	switch choice {
+	case "json", "markdown", "both":
+		return choice, nil
+	case "md":
+		return "markdown", nil
+	}
+	return "", errors.New("format must be one of json, markdown, or both")
+}
+
+func resolveTimeWindow(rangeStr string, daysBack, hoursBack int) (since, until *time.Time, err error) {
+	if strings.TrimSpace(rangeStr) != "" {
+		start, end, perr := parseRange(rangeStr)
+		if perr != nil {
+			return nil, nil, fmt.Errorf("invalid --range value: %w", perr)
+		}
+		return &start, &end, nil
+	}
+	if daysBack > 0 || hoursBack > 0 {
+		totalHours := (daysBack * 24) + hoursBack
+		if totalHours <= 0 {
+			return nil, nil, errors.New("days/hours window must be positive")
+		}
+		cutoff := time.Now().UTC().Add(-time.Duration(totalHours) * time.Hour)
+		return &cutoff, nil, nil
+	}
+	return nil, nil, errors.New("specify --range or a --days/--hours window")
+}
+
+func resolveOutputPrefix(flagValue, channel string) string {
+	prefix := strings.TrimSpace(flagValue)
+	if prefix != "" {
+		return prefix
+	}
+	timestamp := time.Now().UTC().Format("20060102T150405Z")
+	return fmt.Sprintf("discord_%s_%s", channel, timestamp)
+}
+
+func normalizeStringList(values []string) []string {
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		if trimmed := strings.ToLower(strings.TrimSpace(v)); trimmed != "" {
+			out = append(out, trimmed)
+		}
+	}
+	return out
 }
 
 func parseTimestamp(value string) (time.Time, error) {
@@ -167,7 +181,7 @@ func parseTimestamp(value string) (time.Time, error) {
 	return time.Time{}, err
 }
 
-func parseRange(value string) (time.Time, time.Time, error) {
+func parseRange(value string) (start, end time.Time, err error) {
 	v := strings.TrimSpace(value)
 	parts := strings.Split(v, ",")
 	if len(parts) != 2 {
@@ -176,11 +190,11 @@ func parseRange(value string) (time.Time, time.Time, error) {
 			return time.Time{}, time.Time{}, errors.New("range must be start,end")
 		}
 	}
-	start, err := parseTimestamp(parts[0])
+	start, err = parseTimestamp(parts[0])
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("invalid start: %w", err)
 	}
-	end, err := parseTimestamp(parts[1])
+	end, err = parseTimestamp(parts[1])
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("invalid end: %w", err)
 	}
@@ -191,5 +205,7 @@ func parseRange(value string) (time.Time, time.Time, error) {
 }
 
 func printUsage(w io.Writer, bin string) {
-	fmt.Fprintf(w, usageText, bin, bin, bin, bin, bin)
+	if _, err := fmt.Fprintf(w, usageText, bin, bin, bin, bin, bin); err != nil {
+		fmt.Fprintln(os.Stderr, "warning: failed to write usage:", err)
+	}
 }

@@ -1,4 +1,3 @@
 module github.com/ul0gic/ripcord
 
-go 1.22.0
-
+go 1.26.2

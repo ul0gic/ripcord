@@ -29,7 +29,7 @@ func NewDiscordClient(token string) *DiscordClient {
 	}
 }
 
-func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, error) {
+func (c *DiscordClient) ScrapeChannel(opts *scrapeOptions) ([]Message, Stats, error) {
 	var results []Message
 	var stats Stats
 	var before string
@@ -53,50 +53,10 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 		}
 
 		var stop bool
-		for _, raw := range batch {
-			if raw.Author.Bot {
-				continue
-			}
-
-			msgTime, err := time.Parse(time.RFC3339Nano, raw.Timestamp)
-			if err != nil {
-				if fallback, ferr := time.Parse(time.RFC3339, raw.Timestamp); ferr == nil {
-					msgTime = fallback
-				} else {
-					continue
-				}
-			}
-			msgTime = msgTime.UTC()
-
-			if opts.Until != nil && msgTime.After(opts.Until.UTC()) {
-				continue
-			}
-
-			if opts.Since != nil && msgTime.Before(opts.Since.UTC()) {
-				stop = true
-				break
-			}
-
-			normalized := normalizeMessage(raw, msgTime)
-
-			if len(users) > 0 && !matchesUsers(normalized.Author, users) {
-				continue
-			}
-
-			if len(keywords) > 0 && !matchesKeywords(normalized.Content, keywords) {
-				continue
-			}
-
-			if normalized.Content == "" && len(normalized.Attachments) == 0 && normalized.EmbedCount == 0 {
-				continue
-			}
-
-			results = append(results, normalized)
-			if opts.MaxMessages > 0 && len(results) >= opts.MaxMessages {
-				return results, stats, nil
-			}
+		results, stop = collectBatch(batch, results, opts, users, keywords)
+		if opts.MaxMessages > 0 && len(results) >= opts.MaxMessages {
+			return results[:opts.MaxMessages], stats, nil
 		}
-
 		if stop {
 			break
 		}
@@ -108,6 +68,61 @@ func (c *DiscordClient) ScrapeChannel(opts scrapeOptions) ([]Message, Stats, err
 	}
 
 	return results, stats, nil
+}
+
+// collectBatch filters one page of API messages and appends keepers to results.
+// Returns updated results and stop=true when a message older than opts.Since is
+// reached (which means pagination should halt).
+func collectBatch(batch []apiMessage, results []Message, opts *scrapeOptions, users, keywords []string) ([]Message, bool) {
+	for i := range batch {
+		raw := &batch[i]
+		if raw.Author.Bot {
+			continue
+		}
+
+		msgTime, ok := parseMessageTime(raw.Timestamp)
+		if !ok {
+			continue
+		}
+
+		if opts.Until != nil && msgTime.After(opts.Until.UTC()) {
+			continue
+		}
+		if opts.Since != nil && msgTime.Before(opts.Since.UTC()) {
+			return results, true
+		}
+
+		normalized := normalizeMessage(raw, msgTime)
+		if !messagePassesFilters(&normalized, users, keywords) {
+			continue
+		}
+
+		results = append(results, normalized)
+	}
+	return results, false
+}
+
+func parseMessageTime(timestamp string) (time.Time, bool) {
+	if t, err := time.Parse(time.RFC3339Nano, timestamp); err == nil {
+		return t.UTC(), true
+	}
+	if t, err := time.Parse(time.RFC3339, timestamp); err == nil {
+		return t.UTC(), true
+	}
+	return time.Time{}, false
+}
+
+func messagePassesFilters(msg *Message, users, keywords []string) bool {
+	if len(users) > 0 && !matchesUsers(&msg.Author, users) {
+		return false
+	}
+	if len(keywords) > 0 && !matchesKeywords(msg.Content, keywords) {
+		return false
+	}
+	if msg.Content == "" && len(msg.Attachments) == 0 && msg.EmbedCount == 0 {
+		return false
+	}
+	return true
 }
 
 var errNoMoreMessages = errors.New("no more messages")
@@ -126,7 +141,7 @@ func (c *DiscordClient) fetchBatch(channelID, before string, limit int) ([]apiMe
 	for attempt := 0; attempt < 5; attempt++ {
 		c.throttle()
 
-		req, err := http.NewRequest(http.MethodGet, endpoint+"?"+params.Encode(), nil)
+		req, err := http.NewRequest(http.MethodGet, endpoint+"?"+params.Encode(), http.NoBody)
 		if err != nil {
 			return nil, metrics, err
 		}
@@ -142,10 +157,10 @@ func (c *DiscordClient) fetchBatch(channelID, before string, limit int) ([]apiMe
 
 		metrics.requests++
 
-		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			lastErr = err
+		body, readErr := io.ReadAll(resp.Body)
+		closeErr := resp.Body.Close()
+		if combined := errors.Join(readErr, closeErr); combined != nil {
+			lastErr = combined
 			time.Sleep(backoffDuration(attempt))
 			continue
 		}
@@ -218,14 +233,14 @@ func backoffDuration(attempt int) time.Duration {
 	return d
 }
 
-func normalizeMessage(raw apiMessage, timestamp time.Time) Message {
+func normalizeMessage(raw *apiMessage, timestamp time.Time) Message {
 	msg := Message{
 		ID:        raw.ID,
 		ChannelID: raw.ChannelID,
 		Author: Author{
 			ID:          raw.Author.ID,
 			Username:    chooseName(raw.Author.Username, raw.Author.GlobalName),
-			DisplayName: chooseDisplayName(raw.Author),
+			DisplayName: chooseDisplayName(&raw.Author),
 			Bot:         raw.Author.Bot,
 		},
 		Content:    raw.Content,
@@ -243,8 +258,8 @@ func normalizeMessage(raw apiMessage, timestamp time.Time) Message {
 
 	if len(raw.Mentions) > 0 {
 		mentions := make([]string, 0, len(raw.Mentions))
-		for _, mt := range raw.Mentions {
-			mentions = append(mentions, mt.ID)
+		for i := range raw.Mentions {
+			mentions = append(mentions, raw.Mentions[i].ID)
 		}
 		msg.MentionUserIDs = mentions
 	}
@@ -255,15 +270,16 @@ func normalizeMessage(raw apiMessage, timestamp time.Time) Message {
 
 	if len(raw.Attachments) > 0 {
 		attachments := make([]Attachment, 0, len(raw.Attachments))
-		for _, att := range raw.Attachments {
-			attachments = append(attachments, Attachment(att))
+		for i := range raw.Attachments {
+			attachments = append(attachments, Attachment(raw.Attachments[i]))
 		}
 		msg.Attachments = attachments
 	}
 
 	if len(raw.Reactions) > 0 {
 		reactions := make([]Reaction, 0, len(raw.Reactions))
-		for _, react := range raw.Reactions {
+		for i := range raw.Reactions {
+			react := &raw.Reactions[i]
 			emoji := react.Emoji.Name
 			if emoji == "" && react.Emoji.ID != "" {
 				emoji = fmt.Sprintf(":%s:", react.Emoji.ID)
@@ -293,7 +309,7 @@ func chooseName(username, global string) string {
 	return username
 }
 
-func chooseDisplayName(author apiAuthor) string {
+func chooseDisplayName(author *apiAuthor) string {
 	if author.DisplayName != "" {
 		return author.DisplayName
 	}
@@ -333,7 +349,7 @@ func matchesKeywords(content string, keywords []string) bool {
 	return false
 }
 
-func matchesUsers(author Author, users []string) bool {
+func matchesUsers(author *Author, users []string) bool {
 	if len(users) == 0 {
 		return true
 	}
