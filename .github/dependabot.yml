@@ -29,3 +29,10 @@ updates:
     commit-message:
       prefix: "chore(ci)"
       include: "scope"
+    # Bundle all GitHub Actions updates into a single weekly PR so we review
+    # one diff per week instead of N separate PRs. Pin SHAs in workflows give
+    # the supply-chain protection; grouping reduces the review burden.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
